@@ -23,6 +23,7 @@ A Streamlit interface provides an interactive way to capture hand poses, predict
 ---
 
 🌐 Live Demo
+
 *https://egyptian-coin-detection-and-counting-system-using-yolov8-8vlct.streamlit.app/*
 ---
 
