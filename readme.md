@@ -160,33 +160,22 @@ The extracted features and labels are stored for model training.
 ```text
 asl-sign-language-recognition/
 │
-├── app.py                       # Streamlit application
+├── app.py                   # Streamlit application
 │
-├── src/
-│   ├── feature_extraction.py    # MediaPipe landmark extraction
-│   ├── train.py                 # Model training
-│   └── predict.py               # Real-time inference
-│
-├── models/
-│   ├── asl_classifier.pkl       # Trained SVM + label encoder
-│   └── scaler.pkl               # Fitted StandardScaler
+├── feature_extraction.py    # MediaPipe landmark extraction
+|
+├── predict.py               # Real-time inference
+|
+├── train.py                 # Model training
+|
+├── asl_classifier.pkl       # Trained SVM + label encoder
+|
+|── scaler.pkl               # Fitted StandardScaler
 │
 ├── dataset/
 │   └── ...                      # Training dataset
-│
-├── notebooks/
-│   └── training.ipynb
-│
-├── screenshots/
-│   ├── home.png
-│   ├── prediction.png
-│   └── word_builder.png
-│
-├── docs/
-│
+├── training.ipynb
 ├── requirements.txt
-├── .gitignore
-├── LICENSE
 └── README.md
 ```
 
@@ -253,11 +242,7 @@ python src/feature_extraction.py
 python src/train.py
 ```
 
-The trained model and scaler will be saved inside:
-
-```text
-models/
-```
+The trained model and scaler will be saved:
 
 ---
 
