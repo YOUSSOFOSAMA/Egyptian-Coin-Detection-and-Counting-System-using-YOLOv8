@@ -1,280 +1,348 @@
-\# Egyptian Coin Detection and Counting System using YOLOv8
+# 🤟 AI-Powered ASL Predictor
 
+![Python](https://img.shields.io/badge/Python-3.12-blue?style=for-the-badge\&logo=python)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.30+-FF4B4B?style=for-the-badge\&logo=streamlit)
+![OpenCV](https://img.shields.io/badge/OpenCV-5.0-green?style=for-the-badge\&logo=opencv)
+![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.9.0-orange?style=for-the-badge\&logo=scikit-learn)
+![MediaPipe](https://img.shields.io/badge/MediaPipe-0.10.14-blue?style=for-the-badge)
 
+A **real-time American Sign Language (ASL) alphabet recognition system** built with Python, MediaPipe, Scikit-Learn, OpenCV, and Streamlit.
 
-An end-to-end computer vision application for detecting, classifying, and counting Egyptian coins using \*\*YOLOv8\*\*. The project includes a trained custom object detection model and an interactive \*\*Streamlit\*\* web application that supports image uploads and live camera capture for real-time inference.
+The system extracts 3D hand landmarks using **MediaPipe**, applies landmark normalization and feature scaling, and uses a trained **Support Vector Machine (SVM)** classifier to recognize ASL alphabet signs in real time.
 
+---
 
+## 🌟 Overview
 
-\---
+This project demonstrates a complete computer vision and machine learning pipeline for recognizing American Sign Language hand gestures.
 
+The system processes hand images through **MediaPipe Hand Landmark Detection**, converts the detected landmarks into normalized numerical features, and classifies the resulting hand pose using an **SVM with an RBF kernel**.
 
+A Streamlit interface provides an interactive way to capture hand poses, predict letters, and build complete words.
 
-\## Features
+---
 
+## 🚀 Features
 
+* **Real-Time Hand Detection** using MediaPipe.
+* **21 Hand Landmark Detection** with 3D coordinates.
+* **Translation Normalization** using the wrist as the reference point.
+* **Scale Normalization** to reduce sensitivity to different hand sizes and camera distances.
+* **StandardScaler** for machine learning feature standardization.
+* **SVM Classification** using an RBF kernel.
+* **Real-Time ASL Prediction** through webcam input.
+* **Interactive Word Builder** for combining predicted letters.
+* **Undo and Clear Controls** for word construction.
+* **Prediction Visualization** directly on the camera feed.
+* **MySQL Integration** for storing prediction records.
+* **Streamlit Web Interface** for an interactive user experience.
+* **Cloud Deployment Support** through Streamlit Community Cloud.
 
-\- Detects Egyptian coins using a custom-trained YOLOv8 model
+---
 
-\- Supports both image upload and live camera capture
+## 🧠 How It Works
 
-\- Automatic coin classification
+### 1. Hand Landmark Detection
 
-\- Automatic coin cropping for each detected coin
+The webcam frame is processed using MediaPipe Hands to detect **21 landmarks** on the user's hand.
 
-\- Centroid-based tracking to prevent duplicate counting
+Each landmark contains:
 
-\- Session-based counting statistics
+```text
+x coordinate
+y coordinate
+z coordinate
+```
 
-\- Automatic total currency value calculation
+This produces:
 
-\- Interactive Streamlit web interface
+```text
+21 landmarks × 3 coordinates = 63 features
+```
 
-\- Fast real-time inference
+---
 
+### 2. Landmark Normalization
 
+Raw landmark coordinates are normalized before being passed to the classifier.
 
-\---
+The preprocessing pipeline is:
 
+```text
+Camera Frame
+     ↓
+MediaPipe Hand Detection
+     ↓
+21 Hand Landmarks
+     ↓
+Wrist-Based Translation Normalization
+     ↓
+Hand-Scale Normalization
+     ↓
+63-Dimensional Feature Vector
+     ↓
+StandardScaler
+     ↓
+SVM Classifier
+     ↓
+ASL Letter
+```
 
+### Why normalization?
 
-\## Model Performance
+Normalization reduces the influence of factors that should not change the meaning of a gesture, such as:
 
+* Hand position in the image
+* Different hand sizes
+* Different distances from the camera
 
+This allows the classifier to focus more on the **relative geometric structure of the hand**.
 
-The model was trained using \*\*YOLOv8 Nano (YOLOv8n)\*\* with transfer learning.
+> The exact normalization function used during training must also be used during prediction.
 
+---
 
+## 🤖 Machine Learning Model
 
-| Metric | Score |
+The project uses a **Support Vector Machine (SVM)** classifier with an RBF kernel.
 
-|---------|------:|
+```python
+SVC(
+    kernel="rbf",
+    probability=True
+)
+```
 
-| mAP@50 | \*\*0.995\*\* |
+Before training, the extracted features are standardized using:
 
-| mAP@50-95 | \*\*0.824\*\* |
+```python
+StandardScaler()
+```
 
-| Precision | \*\*0.993\*\* |
+The scaler is fitted using the training data and saved for later use during inference.
 
-| Recall | \*\*1.000\*\* |
+```text
+Training:
 
+Features
+   ↓
+StandardScaler.fit_transform()
+   ↓
+SVM Training
+```
 
+During prediction:
 
-Training Configuration
+```text
+New Features
+   ↓
+Saved StandardScaler.transform()
+   ↓
+SVM Prediction
+```
 
+The scaler is **never fitted again during inference**.
 
+---
 
-\- Model: YOLOv8n
+## 📊 Dataset
 
-\- Epochs: 30
+The model was trained using an ASL alphabet image dataset containing multiple gesture categories.
 
-\- Image Size: 640 × 640
+The feature extraction pipeline processes the dataset and converts images containing detectable hands into numerical landmark representations.
 
-\- Hardware: NVIDIA T4 GPU
+The extracted features and labels are stored for model training.
 
-\- Training Platform: Google Colab
+---
 
+## 🗂️ Repository Structure
 
-
-\---
-
-
-
-\## Technologies
-
-
-
-\- Python
-
-\- YOLOv8
-
-\- Ultralytics
-
-\- Streamlit
-
-\- OpenCV
-
-\- Pillow
-
-\- PyTorch
-
-
-
-\---
-
-
-
-\## Project Structure
-
-
-
-egyptian-coin-detector-yolov8/
-
+```text
+asl-sign-language-recognition/
 │
-
-├── app.py
-
+├── app.py                       # Streamlit application
+│
+├── src/
+│   ├── feature_extraction.py    # MediaPipe landmark extraction
+│   ├── train.py                 # Model training
+│   └── predict.py               # Real-time inference
+│
+├── models/
+│   ├── asl_classifier.pkl       # Trained SVM + label encoder
+│   └── scaler.pkl               # Fitted StandardScaler
+│
+├── dataset/
+│   └── ...                      # Training dataset
+│
+├── notebooks/
+│   └── training.ipynb
+│
+├── screenshots/
+│   ├── home.png
+│   ├── prediction.png
+│   └── word_builder.png
+│
+├── docs/
+│
 ├── requirements.txt
-
-├── README.md
-
 ├── .gitignore
-
-│
-
-├── best.pt
-
-│
-
-├── training.ipynb
-
-│
-
-└── Gneh\_Model\_Evaluation\_Report.pdf
-
-
-
-\---
-
-
-
-\## Installation
-
-
-
-Clone the repository
-
-
-
-```bash
-
-git clone https://github.com/YOUSSOFOSAMA/egyptian-coin-detector-yolov8.git
-
+├── LICENSE
+└── README.md
 ```
 
+---
 
+## ⚙️ Installation
 
-Navigate to the project directory
-
-
+### 1. Clone the Repository
 
 ```bash
-
-cd egyptian-coin-detector-yolov8
-
+git clone https://github.com/YOUR_USERNAME/asl-sign-language-recognition.git
+cd asl-sign-language-recognition
 ```
 
-
-
-Install dependencies
-
-
+### 2. Create a Virtual Environment
 
 ```bash
+python -m venv .venv
+```
 
+Activate it on Windows:
+
+```cmd
+.venv\Scripts\activate
+```
+
+### 3. Install Dependencies
+
+```bash
 pip install -r requirements.txt
-
 ```
 
+---
 
+## ▶️ Running the Application
 
-\---
-
-
-
-\## Usage
-
-
-
-Run the Streamlit application
-
-
+Launch the Streamlit application with:
 
 ```bash
-
-streamlit run app.py
-
+python -m streamlit run app.py
 ```
 
+The application will open in your browser at:
 
+```text
+http://localhost:8501
+```
 
-Then open the displayed local URL in your browser.
+---
 
+## 🏋️ Model Training
 
+If you want to reproduce the training pipeline:
 
-\---
+### Step 1 — Extract Hand Features
 
+```bash
+python src/feature_extraction.py
+```
 
+### Step 2 — Train the SVM
 
-\## How It Works
+```bash
+python src/train.py
+```
 
+The trained model and scaler will be saved inside:
 
+```text
+models/
+```
 
-1\. Upload an image or capture one using your camera.
+---
 
-2\. The YOLOv8 model detects and classifies each coin.
+## 🗄️ MySQL Integration
 
-3\. Bounding boxes are drawn around detected coins.
+The original application also supports MySQL integration for storing prediction records.
 
-4\. Each detected coin is cropped automatically.
+The database can store information such as:
 
-5\. A centroid-based tracking algorithm prevents duplicate counting.
+* Predicted letter
+* Captured image
+* Prediction history
 
-6\. Session statistics are updated.
+For security and portability, database credentials should be stored in environment variables rather than hard-coded in the source code.
 
-7\. The total monetary value is calculated automatically.
+---
 
+## 📐 System Architecture
 
+```text
+                 ┌───────────────────┐
+                 │   Webcam / Image  │
+                 └─────────┬─────────┘
+                           │
+                           ▼
+                 ┌───────────────────┐
+                 │    MediaPipe      │
+                 │   Hand Detection  │
+                 └─────────┬─────────┘
+                           │
+                           ▼
+                 ┌───────────────────┐
+                 │ 21 Hand Landmarks │
+                 │    (x, y, z)      │
+                 └─────────┬─────────┘
+                           │
+                           ▼
+                 ┌───────────────────┐
+                 │    Landmark       │
+                 │   Normalization   │
+                 └─────────┬─────────┘
+                           │
+                           ▼
+                 ┌───────────────────┐
+                 │   StandardScaler  │
+                 └─────────┬─────────┘
+                           │
+                           ▼
+                 ┌───────────────────┐
+                 │   SVM Classifier   │
+                 │      RBF Kernel    │
+                 └─────────┬─────────┘
+                           │
+                           ▼
+                 ┌───────────────────┐
+                 │   ASL Prediction  │
+                 └─────────┬─────────┘
+                           │
+                  ┌────────┴────────┐
+                  ▼                 ▼
+          ┌───────────────┐  ┌──────────────┐
+          │ Word Builder  │  │ MySQL Logging│
+          └───────────────┘  └──────────────┘
+```
 
-\---
+---
 
+## 📈 Model Evaluation
 
+The training pipeline evaluates the classifier using:
 
-\## Dataset
+* Training Accuracy
+* Test Accuracy
+* Confusion Matrix
 
+The confusion matrix is generated using the test set to visualize classification performance across the ASL alphabet classes.
 
+---
 
-The model was trained using a custom annotated Egyptian coin dataset.
+## 🔮 Future Improvements
 
-
-
-Classes
-
-
-
-\- Gneh
-
-\- NosGneh
-
-
-
-Annotation Platform
-
-
-
-\- Roboflow
-
-
-
-\---
-
-
-
-\## Future Improvements
-
-
-
-\- Support additional Egyptian pounds
-
-\- Real-time webcam video detection
-
-\- Object tracking across video frames
-
-\- Export detection reports
-
-\- Mobile deployment
-
-
-
-\---
-
+* Improve robustness to hand rotation and perspective changes.
+* Add support for two-hand gestures.
+* Add temporal gesture recognition for dynamic signs.
+* Improve prediction smoothing for real-time inference.
+* Add confidence-based prediction filtering.
+* Replace local MySQL dependency with an optional cloud database.
+* Expand the system beyond alphabet signs to complete ASL words and phrases.
